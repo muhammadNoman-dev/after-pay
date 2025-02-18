@@ -1,16 +1,16 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ConfigService } from './config/config.service';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { Callback, Context, Handler } from 'aws-lambda';
+import serverlessExpress from '@vendia/serverless-express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
   app.setGlobalPrefix('api');
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Nest Backend')
-    .setDescription('Nest')
+    .setDescription('Nest API Documentation')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
@@ -20,12 +20,18 @@ async function bootstrap() {
     swaggerOptions: { persistAuthorization: true },
   });
 
-  const appConfig = app.get(ConfigService);
   app.enableCors();
-  await app.listen(appConfig.port);
-  console.log('Swagger Docs available at /docs');
-  console.log(
-    `Application is running on: http://localhost:${appConfig.port}/docs`,
-  );
+  await app.init();
+
+  const expressApp = app.getHttpAdapter().getInstance();
+  return serverlessExpress({ app: expressApp });
 }
-bootstrap();
+
+export const handler: Handler = async (
+  event: any,
+  context: Context,
+  callback: Callback,
+) => {
+  const server = await bootstrap();
+  return server(event, context, callback);
+};
