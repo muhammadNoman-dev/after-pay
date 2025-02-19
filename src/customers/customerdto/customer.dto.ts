@@ -6,20 +6,21 @@ import {
   IsDateString,
   IsEnum,
   IsNumber,
+  Matches,
 } from 'class-validator';
 
 export class GetBulkDataDto {
-  @ApiProperty({ default: '' })
+  @ApiProperty({ default: '', required: false })
   @IsOptional()
   @IsNumberString()
   limit?: string;
 
-  @ApiProperty({ default: '' })
+  @ApiProperty({ default: '', required: false })
   @IsOptional()
   @IsNumberString()
   offset?: string;
 
-  @ApiProperty({ default: '' })
+  @ApiProperty({ default: '', required: false })
   @IsOptional()
   @IsString()
   fields?: string; // Comma-separated string of field names
@@ -32,6 +33,9 @@ export class CreateCustomerDto {
 
   @ApiProperty({ default: '' })
   @IsString()
+  @Matches(/^\d{13}$/, {
+    message: 'CNIC must be exactly 13 digits long and contain only numbers.',
+  })
   CNIC: string; // Consider adding a regex validation if needed
 
   @ApiProperty({ default: '' })

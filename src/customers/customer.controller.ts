@@ -44,7 +44,10 @@ export class CustomersController {
   }
 
   @Post()
-  async createCustomer(@Body() createCustomerDto: CreateCustomerDto) {
+  async createCustomer(
+    @Body(new ValidationPipe({ whitelist: true, transform: true }))
+    createCustomerDto: CreateCustomerDto,
+  ) {
     try {
       const customer = await this.customersService.createCustomer(
         createCustomerDto,
