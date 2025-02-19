@@ -1,6 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ConfigService } from './config/config.service';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
@@ -22,9 +21,8 @@ async function bootstrap() {
 
   app.enableCors();
 
-  // Use Heroku's PORT or a default one (3000)
-  const configService = app.get(ConfigService);
-  const port = process.env.PORT || configService.port || 3000;
+  // Ensure the app binds to Heroku's provided PORT
+  const port = process.env.PORT || 3000;
 
   await app.listen(port);
   console.log(`Swagger Docs available at /docs`);
