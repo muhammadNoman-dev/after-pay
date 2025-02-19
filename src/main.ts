@@ -9,7 +9,7 @@ async function bootstrap() {
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Nest Backend')
-    .setDescription('Nest')
+    .setDescription('Nest API Documentation')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
@@ -21,12 +21,17 @@ async function bootstrap() {
 
   app.enableCors();
 
-  // Ensure the app binds to Heroku's provided PORT
+  // ✅ Ensure we bind to the correct port
   const port = process.env.PORT || 3000;
+  console.log(`🔹 Process ENV PORT: ${process.env.PORT}`);
+  console.log(`🚀 Starting server on port ${port}...`);
 
-  await app.listen(port);
-  console.log(`Swagger Docs available at /docs`);
-  console.log(`Application is running on: http://localhost:${port}/docs`);
+  try {
+    await app.listen(port, '0.0.0.0'); // Ensure app binds to all interfaces
+    console.log(`Server running on: http://localhost:${port}/docs`);
+  } catch (error) {
+    console.error(`Failed to start server:`, error);
+  }
 }
 
 bootstrap();
