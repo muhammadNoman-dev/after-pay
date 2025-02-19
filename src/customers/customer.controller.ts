@@ -18,7 +18,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
   CreateCustomerDto,
   GetBulkDataDto,
-  UpdateCustomerDto,
+  MarkPaidDto,
 } from './customerdto/customer.dto';
 
 @ApiTags('Customer')
@@ -27,6 +27,14 @@ import {
 @Controller('customers')
 export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}
+
+  @Post('mark-paid')
+  async markPaid(
+    @Query('accountNo') accountNo: string, // Use accountNo as a query parameter
+    @Body() markPaidDto: MarkPaidDto,
+  ) {
+    return this.customersService.markPaid(accountNo, markPaidDto);
+  }
 
   @Get('getbulk-data')
   async getBulkData(

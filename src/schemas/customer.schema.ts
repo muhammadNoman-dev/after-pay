@@ -26,6 +26,9 @@ export class Customer {
 
   @Prop({ default: Date.now }) // Defaults to the current timestamp
   entryDateTime: Date;
+
+  @Prop({ type: [{ paymentDate: Date, paid: Boolean }], default: [] })
+  paymentHistory: { paymentDate: Date; paid: boolean }[];
 }
 
 export type CustomerDocument = Customer & Document;

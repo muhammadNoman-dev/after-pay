@@ -7,7 +7,14 @@ import {
   IsEnum,
   IsNumber,
   Matches,
+  IsNotEmpty,
 } from 'class-validator';
+
+export class MarkPaidDto {
+  @ApiProperty({ default: '2025-02-19T00:00:00.000Z' }) // Example date
+  @IsDateString()
+  paymentDate: string; // ISO DateTime when the installment is paid
+}
 
 export class GetBulkDataDto {
   @ApiProperty({ default: '', required: false })

@@ -1,8 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Customer, CustomerDocument } from 'src/schemas/customer.schema';
-import { CreateCustomerDto } from './customerdto/customer.dto';
-import { Model, Types } from 'mongoose';
+import { CreateCustomerDto, MarkPaidDto } from './customerdto/customer.dto';
+import { ClientSession, Model, Types } from 'mongoose';
 
 @Injectable()
 export class CustomersService {
@@ -46,6 +50,71 @@ export class CustomersService {
       return await newCustomer.save();
     } catch (error) {
       throw new Error('Error creating customer: ' + error.message);
+    }
+  }
+
+  async markPaid(accountNo: string, markPaidDto: MarkPaidDto) {
+    const { paymentDate } = markPaidDto;
+    const paymentDateObj = new Date(paymentDate); // Convert string to Date object
+
+    // Start a MongoDB session
+    const session: ClientSession = await this.customerModel.db.startSession();
+    session.startTransaction();
+
+    try {
+      // Find the customer by accountNo within the session
+      const customer = await this.customerModel
+        .findOne({ accountNo })
+        .session(session);
+
+      if (!customer) {
+        throw new NotFoundException('Customer not found');
+      }
+
+      // Validate that the paymentDate falls within the allowed range
+      if (
+        paymentDateObj < customer.fromDate ||
+        paymentDateObj > customer.toDate
+      ) {
+        throw new BadRequestException(
+          'Payment date is outside the installment period',
+        );
+      }
+
+      // Extract year and month from paymentDate
+      const paymentYear = paymentDateObj.getFullYear();
+      const paymentMonth = paymentDateObj.getMonth() + 1; // Months are 0-based
+
+      // Check if an installment for this month & year is already paid
+      const existingPayment = customer.paymentHistory.find(
+        (payment) =>
+          new Date(payment.paymentDate).getFullYear() === paymentYear &&
+          new Date(payment.paymentDate).getMonth() + 1 === paymentMonth &&
+          payment.paid === true,
+      );
+
+      if (existingPayment) {
+        await session.abortTransaction();
+        session.endSession();
+        return { message: 'Installment already paid for this month' };
+      }
+
+      // Mark installment as paid
+      customer.paymentHistory.push({ paymentDate: paymentDateObj, paid: true });
+
+      // Save the updated customer document
+      await customer.save({ session });
+
+      // Commit the transaction
+      await session.commitTransaction();
+      session.endSession();
+
+      return { message: 'Installment marked as paid successfully' };
+    } catch (error) {
+      // Rollback on error
+      await session.abortTransaction();
+      session.endSession();
+      throw error;
     }
   }
 }
