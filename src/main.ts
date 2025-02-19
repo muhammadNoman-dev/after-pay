@@ -20,12 +20,15 @@ async function bootstrap() {
     swaggerOptions: { persistAuthorization: true },
   });
 
-  const appConfig = app.get(ConfigService);
   app.enableCors();
-  await app.listen(appConfig.port);
-  console.log('Swagger Docs available at /docs');
-  console.log(
-    `Application is running on: http://localhost:${appConfig.port}/docs`,
-  );
+
+  // Use Heroku's PORT or a default one (3000)
+  const configService = app.get(ConfigService);
+  const port = process.env.PORT || configService.port || 3000;
+
+  await app.listen(port);
+  console.log(`Swagger Docs available at /docs`);
+  console.log(`Application is running on: http://localhost:${port}/docs`);
 }
+
 bootstrap();
