@@ -53,7 +53,7 @@ export class CustomersService {
     }
   }
 
-  async markPaid(accountNo: string, markPaidDto: MarkPaidDto) {
+  async markPaid(id: string, markPaidDto: MarkPaidDto) {
     const { paymentDate } = markPaidDto;
     const paymentDateObj = new Date(paymentDate); // Convert string to Date object
 
@@ -62,10 +62,7 @@ export class CustomersService {
     session.startTransaction();
 
     try {
-      // Find the customer by accountNo within the session
-      const customer = await this.customerModel
-        .findOne({ accountNo })
-        .session(session);
+      const customer = await this.customerModel.findById(id).session(session);
 
       if (!customer) {
         throw new NotFoundException('Customer not found');

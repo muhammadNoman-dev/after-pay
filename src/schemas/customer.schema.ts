@@ -6,10 +6,10 @@ export class Customer {
   @Prop({ required: true })
   name: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
   CNIC: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
   accountNo: string;
 
   @Prop({ required: true })
