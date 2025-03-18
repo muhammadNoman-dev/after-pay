@@ -8,6 +8,7 @@ import {
   IsNumber,
   Matches,
   IsNotEmpty,
+  IsMongoId,
 } from 'class-validator';
 
 export class MarkPaidDto {
@@ -31,6 +32,12 @@ export class GetBulkDataDto {
   @IsOptional()
   @IsString()
   fields?: string; // Comma-separated string of field names
+}
+
+export class GetCustomerDto {
+  @ApiProperty({ default: '', description: 'Customer ID' })
+  @IsMongoId()
+  id: string;
 }
 
 export class CreateCustomerDto {

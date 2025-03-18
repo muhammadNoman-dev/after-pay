@@ -24,7 +24,6 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Request() req: any, @Body() _body: LoginDto) {
-    console.warn(' controller req: ', req);
     return this.authService.login(req.user);
   }
 
@@ -39,7 +38,6 @@ export class AuthController {
   @UseInterceptors(ClassSerializerInterceptor)
   @Post('signup')
   async signup(@Body() body: SignupDto) {
-    console.warn(' sign uppp : ', body);
     const user = await this.authService.signup(body);
     return new UserResponseDto(user);
   }

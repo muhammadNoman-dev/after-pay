@@ -18,7 +18,9 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
   CreateCustomerDto,
   GetBulkDataDto,
+  GetCustomerDto,
   MarkPaidDto,
+  UpdateCustomerDto,
 } from './customerdto/customer.dto';
 
 @ApiTags('Customer')
@@ -48,28 +50,27 @@ export class CustomersController {
     );
   }
 
+  @Put('/:id')
+  updateOrganizationById(
+    @Param() params: GetCustomerDto,
+    @Body() body: UpdateCustomerDto,
+  ) {
+    return this.customersService.update(params.id, body);
+  }
+
+  @Delete('delete/:id')
+  deleteCustomerById(@Param() params: GetCustomerDto) {
+    return this.customersService.delete(params.id);
+  }
+
   @Post()
   async createCustomer(
     @Body(new ValidationPipe({ whitelist: true, transform: true }))
     createCustomerDto: CreateCustomerDto,
   ) {
-    try {
-      const customer = await this.customersService.createCustomer(
-        createCustomerDto,
-      );
-      return {
-        success: true,
-        message: 'Customer created successfully',
-        data: customer,
-      };
-    } catch (error) {
-      throw new HttpException(
-        {
-          success: false,
-          message: error.message || 'Failed to create customer',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    const customer = await this.customersService.createCustomer(
+      createCustomerDto,
+    );
+    return customer;
   }
 }

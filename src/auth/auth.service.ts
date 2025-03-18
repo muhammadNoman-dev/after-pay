@@ -42,7 +42,6 @@ export class AuthService {
   }
 
   async login(user: UserDocument) {
-    console.warn('asdads: ', user);
     const payload = { username: user.email, sub: user._id };
     return {
       token: this.jwtService.sign(payload),

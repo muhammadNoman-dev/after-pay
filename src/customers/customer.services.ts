@@ -5,7 +5,11 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Customer, CustomerDocument } from 'src/schemas/customer.schema';
-import { CreateCustomerDto, MarkPaidDto } from './customerdto/customer.dto';
+import {
+  CreateCustomerDto,
+  MarkPaidDto,
+  UpdateCustomerDto,
+} from './customerdto/customer.dto';
 import { ClientSession, Model, Types } from 'mongoose';
 
 @Injectable()
@@ -21,6 +25,20 @@ export class CustomersService {
 
   findOne(filters: Partial<Customer>) {
     return this.customerModel.findOne(filters).lean().exec();
+  }
+
+  // DELETE
+  async delete(id: string) {
+    const deletedCustomer = await this.customerModel
+      .findOneAndDelete({
+        _id: id,
+      })
+      .lean();
+
+    return {
+      ...deletedCustomer,
+      successMessage: 'Customer DELETED',
+    };
   }
 
   async getBulkData(
@@ -39,15 +57,15 @@ export class CustomersService {
     return query.exec();
   }
 
-  async createCustomer(
-    createCustomerDto: CreateCustomerDto,
-  ): Promise<Customer> {
+  async createCustomer(createCustomerDto: CreateCustomerDto) {
     try {
-      const newCustomer = new this.customerModel({
-        ...createCustomerDto,
-        entryDateTime: createCustomerDto.entryDateTime || new Date(), // Defaults to current timestamp
-      });
-      return await newCustomer.save();
+      const newCustomer = { ...createCustomerDto, entryDateTime: new Date() };
+
+      const createdCustomer = await this.customerModel.create(newCustomer);
+      return {
+        ...createdCustomer.toObject(),
+        successMessage: 'Customer CREATED',
+      };
     } catch (error) {
       throw new Error('Error creating customer: ' + error.message);
     }
@@ -113,5 +131,19 @@ export class CustomersService {
       session.endSession();
       throw error;
     }
+  }
+
+  async update(id: string, customer: UpdateCustomerDto) {
+    const customerFound = await this.findById(id);
+    if (!customerFound) throw new NotFoundException('Customer NOT FOUND');
+    const updatedCustomer = await this.customerModel.findByIdAndUpdate(
+      id,
+      { $set: customer },
+      { new: true, lean: true },
+    );
+    return {
+      ...updatedCustomer,
+      successMessage: 'Customer UPDATED',
+    };
   }
 }
